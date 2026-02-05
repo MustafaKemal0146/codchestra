@@ -29,6 +29,32 @@ summary: Did something
     const s = parseStatusBlock(out);
     expect(s!.exitSignal).toBe(true);
   });
+
+  it('parses the last STATUS block when multiple exist', () => {
+    const out = `STATUS:\nprogress: 10\ntasks_completed: 1\ntasks_total: 10\nEXIT_SIGNAL: false\nsummary: First\n\nSTATUS:\nprogress: 80\ntasks_completed: 8\ntasks_total: 10\nEXIT_SIGNAL: false\nsummary: Latest`;
+    const s = parseStatusBlock(out);
+    expect(s).not.toBeNull();
+    expect(s!.progress).toBe(80);
+    expect(s!.summary).toBe('Latest');
+  });
+
+  it('parses markdown bullet formatting', () => {
+    const out = `
+Some answer
+- STATUS:
+- progress: 100%
+- tasks_completed: 12
+- tasks_total: 12
+- EXIT_SIGNAL: true
+- summary: all tasks done
+`;
+    const s = parseStatusBlock(out);
+    expect(s).not.toBeNull();
+    expect(s!.progress).toBe(100);
+    expect(s!.tasksCompleted).toBe(12);
+    expect(s!.tasksTotal).toBe(12);
+    expect(s!.exitSignal).toBe(true);
+  });
 });
 
 describe('hasStatusBlock', () => {

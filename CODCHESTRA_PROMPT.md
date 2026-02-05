@@ -20,6 +20,8 @@ tasks_total: <number>
 EXIT_SIGNAL: <true or false>
 summary: <one line describing what you did>
 
+Print this block as plain text (no markdown/code fence).
+
 EXIT_SIGNAL may only be true when all tasks are complete.
 
 ---

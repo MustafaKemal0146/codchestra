@@ -1,36 +1,48 @@
 import type { ParsedStatus } from './state.js';
 import stripAnsi from 'strip-ansi';
 
-const STATUS_BLOCK_RE = /STATUS:\s*\n([\s\S]*)/i;
-const PROGRESS_RE = /progress:\s*(\d+)/i;
-const TASKS_COMPLETED_RE = /tasks_completed:\s*(\d+)/i;
-const TASKS_TOTAL_RE = /tasks_total:\s*(\d+)/i;
-const EXIT_SIGNAL_RE = /EXIT_SIGNAL:\s*(true|false)/i;
-const SUMMARY_RE = /summary:\s*(.+?)(?=\n|$)/is;
+const STATUS_LINE_RE = /(?:^|\n)\s*(?:[-*]\s*)?(?:\*\*)?STATUS(?:\*\*)?\s*:\s*(?:\n|$)/gi;
+
+function fieldValue(block: string, key: string): string | undefined {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?:^|\\n)\\s*(?:[-*]\\s*)?(?:\\*\\*)?${escaped}(?:\\*\\*)?\\s*:\\s*([^\\n]+)`, 'i');
+  return block.match(re)?.[1]?.trim();
+}
+
+function getStatusBlock(raw: string): string | null {
+  const plain = stripAnsi(raw).replace(/\r\n/g, '\n');
+  const matches = Array.from(plain.matchAll(STATUS_LINE_RE));
+  if (matches.length === 0) return null;
+  const last = matches[matches.length - 1];
+  const start = (last.index ?? 0) + last[0].length;
+  return plain.slice(start);
+}
 
 export function parseStatusBlock(stdout: string): ParsedStatus | null {
-  const plain = stripAnsi(stdout);
-  const blockMatch = plain.match(STATUS_BLOCK_RE);
-  if (!blockMatch) return null;
-  const block = blockMatch[1];
-  const progress = block.match(PROGRESS_RE)?.[1];
-  const tasksCompleted = block.match(TASKS_COMPLETED_RE)?.[1];
-  const tasksTotal = block.match(TASKS_TOTAL_RE)?.[1];
-  const exitSignal = block.match(EXIT_SIGNAL_RE)?.[1];
-  const summary = block.match(SUMMARY_RE)?.[1];
+  const block = getStatusBlock(stdout);
+  if (!block) return null;
+  const progress = fieldValue(block, 'progress');
+  const tasksCompleted = fieldValue(block, 'tasks_completed');
+  const tasksTotal = fieldValue(block, 'tasks_total');
+  const exitSignal = fieldValue(block, 'EXIT_SIGNAL');
+  const summary = fieldValue(block, 'summary');
+  const progressNum = progress ? Number.parseInt(progress.match(/\d+/)?.[0] ?? '', 10) : Number.NaN;
+  const tasksCompletedNum = tasksCompleted ? Number.parseInt(tasksCompleted.match(/\d+/)?.[0] ?? '', 10) : Number.NaN;
+  const tasksTotalNum = tasksTotal ? Number.parseInt(tasksTotal.match(/\d+/)?.[0] ?? '', 10) : Number.NaN;
+  const exitSignalBool = exitSignal?.toLowerCase().match(/\b(true|false)\b/)?.[1];
   if (
-    progress === undefined ||
-    tasksCompleted === undefined ||
-    tasksTotal === undefined ||
-    exitSignal === undefined
+    Number.isNaN(progressNum) ||
+    Number.isNaN(tasksCompletedNum) ||
+    Number.isNaN(tasksTotalNum) ||
+    exitSignalBool === undefined
   ) {
     return null;
   }
   return {
-    progress: Math.min(100, Math.max(0, parseInt(progress, 10))),
-    tasksCompleted: Math.max(0, parseInt(tasksCompleted, 10)),
-    tasksTotal: Math.max(0, parseInt(tasksTotal, 10)),
-    exitSignal: exitSignal.toLowerCase() === 'true',
+    progress: Math.min(100, Math.max(0, progressNum)),
+    tasksCompleted: Math.max(0, tasksCompletedNum),
+    tasksTotal: Math.max(0, tasksTotalNum),
+    exitSignal: exitSignalBool === 'true',
     summary: (summary ?? '').trim(),
   };
 }

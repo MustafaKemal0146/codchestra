@@ -1,4 +1,4 @@
-import { writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { stateDir, tasksPath, promptPath, pluginsDir, TASKS_FILE, PROMPT_FILE } from '../utils/paths.js';
 import { logSuccess, logWarn } from '../utils/logger.js';
@@ -29,6 +29,8 @@ tasks_completed: <number>
 tasks_total: <number>
 EXIT_SIGNAL: <true or false>
 summary: <one line describing what you did>
+
+Print this block as plain text (no markdown/code fence).
 
 EXIT_SIGNAL may only be true when all tasks are complete.
 `;
@@ -63,6 +65,7 @@ export function initCommand(cwd: string): void {
     const rc = {
       maxLoops: 50,
       timeoutMinutes: 120,
+      aiCallTimeoutMinutes: 10,
       aiCommand: '',
       verbosity: 'normal',
       outputFormat: 'text',

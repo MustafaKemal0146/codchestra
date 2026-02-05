@@ -27,6 +27,15 @@ describe('loadConfig', () => {
     expect(c.maxLoops).toBe(99);
     expect(c.timeoutMinutes).toBe(120);
   });
+
+  it('does not load parent .codchestrarc when cwd has none', () => {
+    const parent = join(TEST_DIR, 'parent');
+    const child = join(parent, 'child');
+    mkdirSync(child, { recursive: true });
+    writeFileSync(join(parent, '.codchestrarc'), JSON.stringify({ timeoutMinutes: 77 }));
+    const c = loadConfig(child);
+    expect(c.timeoutMinutes).toBe(120);
+  });
 });
 
 describe('findConfigDir', () => {
