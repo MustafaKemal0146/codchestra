@@ -1,0 +1,7 @@
+{
+  "maxLoops": 10,
+  "timeoutMinutes": 5,
+  "aiCommand": "",
+  "verbosity": "normal",
+  "outputFormat": "text"
+}

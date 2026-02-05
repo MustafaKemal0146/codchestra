@@ -1,0 +1,15 @@
+# npm publish: only "files" in package.json are included (dist, CODCHESTRA_PROMPT.md)
+# These are excluded when packing, to keep the package small
+src/
+examples/
+coverage/
+*.test.ts
+*.test.js
+jest.config.js
+tsconfig.json
+.git/
+.github/
+.gitignore
+.env
+*.log
+.codchestra/

@@ -1,0 +1,10 @@
+export { runLoop, runOneLoop } from './loop/runner.js';
+export { loadConfig, findConfigDir, DEFAULT_CONFIG } from './config/index.js';
+export { getTasks, allTasksDone } from './tasks/manager.js';
+export { parseTasksFile, countByStatus } from './tasks/parser.js';
+export { loadState, saveState, clearState } from './core/state.js';
+export { parseStatusBlock as parseStatus, hasStatusBlock } from './core/exitAnalyzer.js';
+export { loadPlugins, invokeHook } from './plugins/loader.js';
+export { stateDir, tasksPath, promptPath } from './utils/paths.js';
+export { resolveAiCommand } from './utils/aiCommand.js';
+export { getGitDiffSummary, fileChangeScore } from './utils/git.js';
